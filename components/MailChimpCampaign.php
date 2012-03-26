@@ -42,6 +42,7 @@ class MailChimpCampaign extends StatefulModel {
 
   /** @var $mc MCAPI */
   protected $mc;
+  protected $placeHolders = array();
 
   /**
    * Get list of MailChimp Campaign.
@@ -108,6 +109,14 @@ class MailChimpCampaign extends StatefulModel {
   }
 
   public function save() {
+    if (!empty($this->placeHolders)) {
+      $contents = array();
+      foreach ($this->placeHolders as $phName => $value) {
+        $contents['html_'.$phName] = $value;
+      }
+      $this->mc->campaignUpdate($this->id, 'content', $contents);
+      $this->placeHolders = array();
+    }
     foreach ($this->getChanges() as $field=>$value) {
       $this->mc->campaignUpdate($this->id, $field, $value);
     }
@@ -139,14 +148,15 @@ class MailChimpCampaign extends StatefulModel {
   }
 
   /**
-   * Update placeholder in the campaign content.
+   * Update placeholder in the campaign content. Remember to call save to save the changes onto mailchimp.
    *
    * @param string $name
    * @param string $value
-   * @return bool
+   * @return MailChimpCampaign
    */
   public function updateContent($name, $value) {
-    return $this->mc->campaignUpdate($this->id, $name, $value);
+    $this->placeHolders[$name] = html_entity_decode($value);
+    return $this;
   }
 
   /**
