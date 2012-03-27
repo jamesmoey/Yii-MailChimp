@@ -154,8 +154,9 @@ class MailChimpCampaign extends StatefulModel {
    * @param string $value
    * @return MailChimpCampaign
    */
-  public function updateContent($name, $value) {
-    $this->placeHolders[$name] = html_entity_decode($value);
+  public function updateContent($name, $value, $htmlentities = true) {
+    if ($htmlentities) $this->placeHolders[$name] = htmlentities($value);
+    else $this->placeHolders[$name] = $value;
     return $this;
   }
 
